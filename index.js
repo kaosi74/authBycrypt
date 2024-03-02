@@ -4,7 +4,9 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import bycryptjs from "bcryptjs";
+import bcryptjs from "bcryptjs";
+import { Strategy } from "passport-local";
+import GoogleStrategy from "passport-google-oauth2"
 
 const app = express();
 const port = 3000;
@@ -47,7 +49,7 @@ app.post("/signUp", (req, res) => {
   if (fName == "" || lName == "" || email == "" || psw == "") {
     res.json({
       status: "Failed",
-      mesage: "Check empty field",
+      message: "Check empty field",
     });
   } else if (psw.length < 10) {
     res.json({
@@ -63,7 +65,7 @@ app.post("/signUp", (req, res) => {
         });
       } else {
         //   Password hashing
-        bycryptjs.hash(psw, saltRounds, async (err, hash) => {
+        bcryptjs.hash(psw, saltRounds, async (err, hash) => {
           if (err) {
             res.json({
               status: "Failed",
@@ -88,6 +90,7 @@ app.post("/signUp", (req, res) => {
             .catch((err) => {
               res.json({
                 status: "Failed",
+                message: "Error saving user to database",
                 data: err,
               });
             });
@@ -107,7 +110,7 @@ app.post("/login", async (req, res) => {
     if (data) {
       console.log(data);
       const userPass = data.psw;
-      bycryptjs.compare(loginPsw, userPass, (err, result) => {
+      bcryptjs.compare(loginPsw, userPass, (err, result) => {
         if (err) {
           console.log("Error");
         } else {
